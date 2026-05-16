@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #2563EB;
+  --color-brand-cyan: #06B6D4;
+  --color-brand-orange: #FDBA74;
+  --color-brand-navy: #0F172A;
+  --color-brand-white: #FFFFFF;
+  --color-brand-clinical: #F8FBFF;
+
+  --font-sora: var(--font-sora), sans-serif;
+  --font-inter: var(--font-inter), sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-brand-clinical);
+    color: var(--color-brand-navy);
+    font-family: var(--font-inter);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-sora);
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20;
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-lg border border-cyan-100/50 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+}

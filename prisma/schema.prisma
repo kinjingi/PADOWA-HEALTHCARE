@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Division {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  icon        String?   // Icon identifier
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  composition String
+  description String?
+  imageUrl    String?
+  divisionId  String
+  division    Division @relation(fields: [divisionId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Inquiry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  company   String?
+  message   String
+  status    String   @default("NEW") // NEW, REVIEWED, CONTACTED
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+}
+
+model Information {
+  id        String   @id @default(uuid())
+  title     String
+  category  String
+  desc      String
+  link      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
