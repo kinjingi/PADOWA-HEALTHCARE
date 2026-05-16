@@ -7,6 +7,8 @@ import CustomCursor from "@/components/CustomCursor";
 import prisma from "@/lib/prisma";
 import { getSettings } from "@/app/admin/actions";
 
+export const dynamic = 'force-dynamic';
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
