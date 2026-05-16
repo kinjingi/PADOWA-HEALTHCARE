@@ -65,6 +65,13 @@ export async function deleteDivision(id: string) {
 }
 
 export async function verifyPassword(password: string) {
+  // Check environment variable first (best for Vercel)
+  const envPassword = process.env.ADMIN_PASSWORD;
+  if (envPassword && password === envPassword) {
+    return { success: true };
+  }
+
+  // Fallback to database
   let setting = await prisma.setting.findUnique({ where: { key: "admin_password" } });
   
   if (!setting) {
