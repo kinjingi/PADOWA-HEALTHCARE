@@ -5,6 +5,7 @@ import { motion, useMotionValue, useSpring } from "framer-motion";
 
 export default function CustomCursor() {
   const [isHovering, setIsHovering] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -17,6 +18,13 @@ export default function CustomCursor() {
   const ringY = useSpring(mouseY, { stiffness: 150, damping: 25 });
 
   useEffect(() => {
+    // Check if device is touch-based or has a coarse pointer (mobile)
+    const checkMobile = () => {
+      setIsMobile(window.matchMedia("(pointer: coarse)").matches);
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
     const updateMousePosition = (e: MouseEvent) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
@@ -41,10 +49,13 @@ export default function CustomCursor() {
     window.addEventListener("mouseover", handleMouseOver);
 
     return () => {
+      window.removeEventListener("resize", checkMobile);
       window.removeEventListener("mousemove", updateMousePosition);
       window.removeEventListener("mouseover", handleMouseOver);
     };
   }, []);
+
+  if (isMobile) return null;
 
   return (
     <>
