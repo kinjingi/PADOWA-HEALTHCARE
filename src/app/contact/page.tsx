@@ -30,7 +30,7 @@ export default function Contact() {
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-5xl font-bold font-sora mb-6 text-brand-navy"
           >
-            Get In Touch
+            Connect With Us
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
