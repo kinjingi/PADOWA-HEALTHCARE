@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Plus, Edit2, Trash2, X, Save } from "lucide-react";
 import { getInformations, createInformation, updateInformation, deleteInformation } from "@/app/admin/actions";
 
-type Information = { id: string; title: string; category: string; desc: string };
+type Information = { id: string; title: string; category: string; desc: string; link?: string | null };
 
 export default function InformationPages() {
   const [informations, setInformations] = useState<Information[]>([]);
