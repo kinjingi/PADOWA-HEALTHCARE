@@ -23,6 +23,7 @@ model Division {
 model Product {
   id          String   @id @default(uuid())
   name        String
+  slug        String   @unique @default(uuid())
   composition String
   description String?
   imageUrl    String?

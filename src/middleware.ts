@@ -10,8 +10,11 @@ export function middleware(request: NextRequest) {
   // Protect detailed division/product views (e.g., /divisions/cardiology)
   // but allow the main divisions list (/divisions)
   const isProductRoute = pathname.startsWith('/divisions/') && pathname !== '/divisions';
+  
+  // Public verification route for consumers (QR codes)
+  const isVerifyRoute = pathname.startsWith('/verify/');
 
-  if (isAdminRoute || isProductRoute) {
+  if ((isAdminRoute || isProductRoute) && !isVerifyRoute) {
     // Check for our simple auth cookie
     const authCookie = request.cookies.get('padowa_admin_auth');
     

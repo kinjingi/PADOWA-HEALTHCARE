@@ -198,7 +198,10 @@ export async function createProduct(data: {
   imageUrl?: string;
 }) {
   try {
-    await prisma.product.create({ data });
+    const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substring(2, 7);
+    await (prisma.product as any).create({ 
+      data: { ...data, slug } 
+    });
     revalidatePath("/admin/products");
     revalidatePath("/divisions");
     revalidatePath("/");
