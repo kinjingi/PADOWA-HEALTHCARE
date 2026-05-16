@@ -56,7 +56,6 @@ export default function Footer({ divisions = [], settings = {} }: { divisions?: 
               <Link href="/divisions" className="text-brand-navy/70 hover:text-brand-orange transition-colors text-sm">Our Divisions</Link>
               <Link href="/contact" className="text-brand-navy/70 hover:text-brand-orange transition-colors text-sm">Contact</Link>
               <Link href="/distributor-inquiry" className="text-brand-navy/70 hover:text-brand-orange transition-colors text-sm">Partner With Us</Link>
-              <Link href="/admin" className="text-brand-orange/80 hover:text-brand-orange transition-colors mt-2 text-sm font-bold flex items-center gap-1">Admin Login</Link>
             </div>
           </div>
 
