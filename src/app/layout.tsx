@@ -5,9 +5,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CustomCursor from "@/components/CustomCursor";
 import { getSettings, getDivisions } from "@/app/admin/actions";
-
-export const dynamic = 'force-dynamic';
-
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
