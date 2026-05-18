@@ -4,9 +4,27 @@ import Link from "next/link";
 
 export default async function AdminDashboard() {
   // In a real app, fetch these from DB. For now, we use Prisma counts.
-  const productCount = await prisma.product.count();
-  const inquiryCount = await prisma.inquiry.count();
-  const divisionCount = await prisma.division.count();
+  let productCount = 0;
+  let inquiryCount = 0;
+  let divisionCount = 0;
+
+  try {
+    productCount = await prisma.product.count();
+  } catch (err) {
+    console.error("Dashboard productCount query failed:", err);
+  }
+
+  try {
+    inquiryCount = await prisma.inquiry.count();
+  } catch (err) {
+    console.error("Dashboard inquiryCount query failed:", err);
+  }
+
+  try {
+    divisionCount = await prisma.division.count();
+  } catch (err) {
+    console.error("Dashboard divisionCount query failed:", err);
+  }
 
   const stats = [
     { title: "Total Products", value: productCount, icon: <Package size={24} className="text-brand-blue" />, bg: "bg-blue-50" },
