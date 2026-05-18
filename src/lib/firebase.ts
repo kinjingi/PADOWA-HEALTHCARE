@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -15,7 +15,13 @@ const firebaseConfig = {
 // Initialize Firebase
 // Use getApps() to prevent initializing multiple times in development (HMR)
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
+
+// Initialize Firestore with experimentalForceLongPolling enabled.
+// This is critical for Serverless/Next.js routes to load instantly without TCP/WebSocket connection delays!
+const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+  ignoreUndefinedProperties: true
+});
 
 // Analytics is only supported in browser environments
 const analytics = typeof window !== 'undefined' ? isSupported().then(yes => yes ? getAnalytics(app) : null) : null;
