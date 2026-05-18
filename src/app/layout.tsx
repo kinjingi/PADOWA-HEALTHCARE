@@ -32,12 +32,24 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const divisions = await prisma.division.findMany();
-  const settings = await getSettings([
-    "contact_email", "contact_phone", "contact_address",
-    "footer_tagline", "footer_description",
-    "social_fb", "social_ig", "social_li", "social_tw"
-  ]);
+  let divisions: any[] = [];
+  let settings: Record<string, string> = {};
+
+  try {
+    divisions = await prisma.division.findMany();
+  } catch (err) {
+    console.error("Layout divisions error:", err);
+  }
+
+  try {
+    settings = await getSettings([
+      "contact_email", "contact_phone", "contact_address",
+      "footer_tagline", "footer_description",
+      "social_fb", "social_ig", "social_li", "social_tw"
+    ]);
+  } catch (err) {
+    console.error("Layout settings error:", err);
+  }
 
   return (
     <html lang="en">

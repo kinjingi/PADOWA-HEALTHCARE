@@ -15,9 +15,27 @@ export default async function Home() {
     "cv1_title", "cv1_desc", "cv2_title", "cv2_desc", "cv3_title", "cv3_desc"
   ];
   
-  const settings = await getSettings(keys);
-  const informations = await getInformations();
-  const divisions = await prisma.division.findMany();
+  let settings: Record<string, string> = {};
+  let informations: any[] = [];
+  let divisions: any[] = [];
+  
+  try {
+    settings = await getSettings(keys);
+  } catch (err) {
+    console.error("Home getSettings error:", err);
+  }
+  
+  try {
+    informations = await getInformations();
+  } catch (err) {
+    console.error("Home getInformations error:", err);
+  }
+  
+  try {
+    divisions = await prisma.division.findMany();
+  } catch (err) {
+    console.error("Home divisions error:", err);
+  }
   
   return <HomeClient heroSettings={settings} informations={informations} divisions={divisions} />;
 }

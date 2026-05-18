@@ -6,10 +6,15 @@ import Link from "next/link";
 export default async function ProductVerifyPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
-  const product = await (prisma.product as any).findUnique({
-    where: { slug },
-    include: { division: true }
-  });
+  let product = null;
+  try {
+    product = await (prisma.product as any).findUnique({
+      where: { slug },
+      include: { division: true }
+    });
+  } catch (error) {
+    console.error("ProductVerifyPage database error:", error);
+  }
 
   if (!product) {
     notFound();

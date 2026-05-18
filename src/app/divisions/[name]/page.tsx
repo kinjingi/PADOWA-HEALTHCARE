@@ -6,17 +6,28 @@ import { notFound } from "next/navigation";
 export default async function DivisionPage({ params }: { params: Promise<{ name: string }> }) {
   const { name } = await params;
   
-  // Find division ignoring case
-  const divisions = await prisma.division.findMany();
+  let divisions: any[] = [];
+  let products: any[] = [];
+  
+  try {
+    divisions = await prisma.division.findMany();
+  } catch (error) {
+    console.error("DivisionPage divisions error:", error);
+  }
+  
   const division = divisions.find(d => d.name.toLowerCase() === name.toLowerCase());
   
   if (!division) {
     notFound();
   }
 
-  const products = await prisma.product.findMany({
-    where: { divisionId: division.id }
-  });
+  try {
+    products = await prisma.product.findMany({
+      where: { divisionId: division.id }
+    });
+  } catch (error) {
+    console.error("DivisionPage products error:", error);
+  }
 
   return (
     <main className="min-h-screen pt-32 pb-24">
