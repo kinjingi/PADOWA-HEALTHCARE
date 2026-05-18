@@ -1,5 +1,4 @@
-import { getSettings, getInformations } from "@/app/admin/actions";
-import prisma from "@/lib/prisma";
+import { getSettings, getInformations, getDivisions } from "@/app/admin/actions";
 import HomeClient from "@/components/HomeClient";
 
 export default async function Home() {
@@ -32,7 +31,7 @@ export default async function Home() {
   }
   
   try {
-    divisions = await prisma.division.findMany();
+    divisions = await getDivisions();
   } catch (err) {
     console.error("Home divisions error:", err);
   }

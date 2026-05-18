@@ -1,4 +1,6 @@
-import prisma from "@/lib/prisma";
+import { getDivisions } from "@/app/admin/actions";
+import { query, collection, where, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
@@ -10,7 +12,7 @@ export default async function DivisionPage({ params }: { params: Promise<{ name:
   let products: any[] = [];
   
   try {
-    divisions = await prisma.division.findMany();
+    divisions = await getDivisions();
   } catch (error) {
     console.error("DivisionPage divisions error:", error);
   }
@@ -22,9 +24,12 @@ export default async function DivisionPage({ params }: { params: Promise<{ name:
   }
 
   try {
-    products = await prisma.product.findMany({
-      where: { divisionId: division.id }
-    });
+    const q = query(collection(db, "products"), where("divisionId", "==", division.id));
+    const querySnapshot = await getDocs(q);
+    products = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as any[];
   } catch (error) {
     console.error("DivisionPage products error:", error);
   }

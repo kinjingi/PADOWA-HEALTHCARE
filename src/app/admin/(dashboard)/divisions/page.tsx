@@ -1,17 +1,27 @@
+import { getDivisions } from "@/app/admin/actions";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import DivisionRow from "@/components/admin/DivisionRow";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import prisma from "@/lib/prisma";
-import DivisionRow from "@/components/admin/DivisionRow";
 
 export default async function DivisionsPage() {
-  const divisions = await prisma.division.findMany({
-    include: {
-      _count: {
-        select: { products: true }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+  const divisionsList = await getDivisions();
+
+  let products: any[] = [];
+  try {
+    const productsSnapshot = await getDocs(collection(db, "products"));
+    products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+  } catch (error) {
+    console.error("Failed to load products for divisions counting:", error);
+  }
+
+  const divisions = divisionsList.map(division => ({
+    ...division,
+    _count: {
+      products: products.filter(p => p.divisionId === division.id).length
+    }
+  }));
 
   return (
     <div className="max-w-6xl mx-auto">

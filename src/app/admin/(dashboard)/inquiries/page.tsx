@@ -1,9 +1,9 @@
-import prisma from "@/lib/prisma";
+import { getInquiries } from "@/app/admin/actions";
 import { MessageSquare } from "lucide-react";
 import DeleteInquiryButton from "@/components/admin/DeleteInquiryButton";
 
 export default async function InquiriesPage() {
-  const inquiries = await prisma.inquiry.findMany({ orderBy: { createdAt: 'desc' } });
+  const inquiries = await getInquiries();
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -28,7 +28,7 @@ export default async function InquiriesPage() {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h4 className="font-bold text-lg text-brand-navy">{inq.name} <span className="text-sm font-normal text-gray-500">({inq.email})</span></h4>
-                    <span className="text-xs text-gray-400">{inq.createdAt.toLocaleDateString()}</span>
+                    <span className="text-xs text-gray-400">{new Date(inq.createdAt).toLocaleDateString()}</span>
                   </div>
                   <DeleteInquiryButton id={inq.id} />
                 </div>

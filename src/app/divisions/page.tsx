@@ -1,10 +1,10 @@
-import prisma from "@/lib/prisma";
+import { getDivisions } from "@/app/admin/actions";
 import DivisionsClient from "@/components/DivisionsClient";
 
 export default async function Divisions() {
   let divisions: any[] = [];
   try {
-    divisions = await prisma.division.findMany();
+    divisions = await getDivisions();
   } catch (error) {
     console.error("Divisions database error:", error);
   }

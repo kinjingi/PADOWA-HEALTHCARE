@@ -1,7 +1,35 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  getDoc, 
+  getDocs, 
+  setDoc,
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy,
+  limit
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
+export async function getDivisions() {
+  try {
+    const q = query(collection(db, "divisions"), orderBy("name"));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as any[];
+  } catch (error) {
+    console.error("Failed to get divisions:", error);
+    return [];
+  }
+}
 
 export async function createDivision(formData: FormData) {
   try {
@@ -12,11 +40,10 @@ export async function createDivision(formData: FormData) {
       return { error: "Division name is required" };
     }
 
-    await prisma.division.create({
-      data: {
-        name,
-        description,
-      },
+    await addDoc(collection(db, "divisions"), {
+      name,
+      description,
+      createdAt: new Date().toISOString()
     });
 
     revalidatePath("/admin/products");
@@ -33,62 +60,66 @@ export async function createDivision(formData: FormData) {
 
 export async function updateDivision(id: string, name: string, description: string) {
   try {
-    await prisma.division.update({
-      where: { id },
-      data: { name, description }
+    await updateDoc(doc(db, "divisions", id), {
+      name,
+      description,
+      updatedAt: new Date().toISOString()
     });
     revalidatePath("/admin/divisions");
     revalidatePath("/divisions");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
+    console.error("Failed to update division:", error);
     return { error: "Failed to update division" };
   }
 }
 
 export async function deleteDivision(id: string) {
   try {
-    // First check if there are products
-    const productCount = await prisma.product.count({ where: { divisionId: id } });
-    if (productCount > 0) {
+    // First check if there are products with this divisionId
+    const q = query(collection(db, "products"), where("divisionId", "==", id));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
       return { error: "Cannot delete division that has products" };
     }
     
-    await prisma.division.delete({ where: { id } });
+    await deleteDoc(doc(db, "divisions", id));
     revalidatePath("/admin/divisions");
     revalidatePath("/divisions");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
+    console.error("Failed to delete division:", error);
     return { error: "Failed to delete division" };
   }
 }
 
 export async function verifyPassword(password: string) {
   try {
-    // Check environment variable first (best for Vercel)
     const envPassword = process.env.ADMIN_PASSWORD;
     if (envPassword && password === envPassword) {
       return { success: true };
     }
 
-    // Fallback to database
-    let setting = await prisma.setting.findUnique({ where: { key: "admin_password" } });
+    // Fetch setting from settings collection
+    const docRef = doc(db, "settings", "admin_password");
+    const docSnap = await getDoc(docRef);
     
-    if (!setting) {
-      // Initial setup
-      setting = await prisma.setting.create({ data: { key: "admin_password", value: "padowa123" } });
+    let value = "padowa123";
+    if (docSnap.exists()) {
+      value = docSnap.data().value;
+    } else {
+      // Create default in Firestore
+      await setDoc(docRef, { value });
     }
 
-    if (password === setting.value) {
+    if (password === value) {
       return { success: true };
     }
     return { success: false, error: "Incorrect password" };
   } catch (error) {
     console.error("verifyPassword error (falling back to env/default):", error);
-    
-    // In case of database error (like invalid provider in local schema vs env),
-    // fallback to ADMIN_PASSWORD env variable or default "padowa123"
     const envPassword = process.env.ADMIN_PASSWORD || "padowa123";
     if (password === envPassword) {
       return { success: true };
@@ -99,114 +130,172 @@ export async function verifyPassword(password: string) {
 
 export async function updatePassword(newPassword: string) {
   try {
-    await prisma.setting.upsert({
-      where: { key: "admin_password" },
-      update: { value: newPassword },
-      create: { key: "admin_password", value: newPassword }
+    await setDoc(doc(db, "settings", "admin_password"), {
+      value: newPassword
     });
     return { success: true };
   } catch (error) {
+    console.error("Failed to update password:", error);
     return { error: "Failed to update password" };
   }
 }
 
 // Information Actions
 export async function getInformations() {
-  return await prisma.information.findMany({ orderBy: { createdAt: 'desc' } });
+  try {
+    const q = query(collection(db, "informations"), orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as any[];
+  } catch (error) {
+    console.error("Failed to get informations:", error);
+    return [];
+  }
 }
 
 export async function createInformation(data: { title: string; category: string; desc: string; link?: string }) {
   try {
-    await prisma.information.create({ data });
+    await addDoc(collection(db, "informations"), {
+      ...data,
+      createdAt: new Date().toISOString()
+    });
     revalidatePath("/admin/information");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
+    console.error("Failed to create information:", error);
     return { error: "Failed to create information" };
   }
 }
 
 export async function updateInformation(id: string, data: { title: string; category: string; desc: string; link?: string }) {
   try {
-    await prisma.information.update({ where: { id }, data });
+    await updateDoc(doc(db, "informations", id), {
+      ...data,
+      updatedAt: new Date().toISOString()
+    });
     revalidatePath("/admin/information");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
+    console.error("Failed to update information:", error);
     return { error: "Failed to update information" };
   }
 }
 
 export async function deleteInformation(id: string) {
   try {
-    await prisma.information.delete({ where: { id } });
+    await deleteDoc(doc(db, "informations", id));
     revalidatePath("/admin/information");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
+    console.error("Failed to delete information:", error);
     return { error: "Failed to delete information" };
   }
 }
 
 export async function getSettings(keys: string[]) {
-  const settings = await prisma.setting.findMany({
-    where: { key: { in: keys } }
-  });
-  return settings.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {} as Record<string, string>);
+  try {
+    const results: Record<string, string> = {};
+    for (const key of keys) {
+      const docRef = doc(db, "settings", key);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        results[key] = docSnap.data().value;
+      } else {
+        results[key] = "";
+      }
+    }
+    return results;
+  } catch (error) {
+    console.error("Failed to get settings:", error);
+    return {};
+  }
 }
 
 export async function updateSettings(settings: Record<string, string>) {
   try {
     for (const [key, value] of Object.entries(settings)) {
-      await prisma.setting.upsert({
-        where: { key },
-        update: { value },
-        create: { key, value }
-      });
+      await setDoc(doc(db, "settings", key), { value });
     }
     revalidatePath("/");
     return { success: true };
   } catch (error) {
+    console.error("Failed to update settings:", error);
     return { error: "Failed to update settings" };
   }
 }
 
 export async function createInquiry(formData: FormData) {
   try {
-    await prisma.inquiry.create({
-      data: {
-        name: formData.get("name") as string,
-        email: formData.get("email") as string,
-        phone: (formData.get("phone") as string) || "N/A",
-        company: formData.get("company") as string || null,
-        message: formData.get("message") as string,
-      }
+    await addDoc(collection(db, "inquiries"), {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      phone: (formData.get("phone") as string) || "N/A",
+      company: formData.get("company") as string || null,
+      message: formData.get("message") as string,
+      createdAt: new Date().toISOString()
     });
     revalidatePath("/admin/inquiries");
     return { success: true };
   } catch (error) {
+    console.error("Failed to create inquiry:", error);
     return { error: "Failed to create inquiry" };
   }
 }
 
 export async function deleteInquiry(id: string) {
   try {
-    await prisma.inquiry.delete({
-      where: { id }
-    });
+    await deleteDoc(doc(db, "inquiries", id));
     revalidatePath("/admin/inquiries");
     return { success: true };
   } catch (error) {
+    console.error("Failed to delete inquiry:", error);
     return { error: "Failed to delete inquiry" };
+  }
+}
+
+export async function getInquiries() {
+  try {
+    const q = query(collection(db, "inquiries"), orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as any[];
+  } catch (error) {
+    console.error("Failed to get inquiries:", error);
+    return [];
   }
 }
 
 // Product Actions
 export async function getProducts() {
-  return await prisma.product.findMany({
-    include: { division: true },
-    orderBy: { updatedAt: 'desc' }
-  });
+  try {
+    const q = query(collection(db, "products"), orderBy("updatedAt", "desc"));
+    const querySnapshot = await getDocs(q);
+    
+    // Join division manually because Firestore is NoSQL
+    const products = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as any[];
+
+    // Fetch divisions list to map names
+    const divisions = await getDivisions();
+    const divisionsMap = new Map(divisions.map(d => [d.id, d]));
+
+    return products.map(product => ({
+      ...product,
+      division: divisionsMap.get(product.divisionId) || { name: "Unknown" }
+    }));
+  } catch (error) {
+    console.error("Failed to get products:", error);
+    return [];
+  }
 }
 
 export async function createProduct(data: { 
@@ -218,14 +307,18 @@ export async function createProduct(data: {
 }) {
   try {
     const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substring(2, 7);
-    await (prisma.product as any).create({ 
-      data: { ...data, slug } 
+    await addDoc(collection(db, "products"), {
+      ...data,
+      slug,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     });
     revalidatePath("/admin/products");
     revalidatePath("/divisions");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
+    console.error("Failed to create product:", error);
     return { error: "Failed to create product" };
   }
 }
@@ -238,24 +331,29 @@ export async function updateProduct(id: string, data: {
   imageUrl?: string;
 }) {
   try {
-    await prisma.product.update({ where: { id }, data });
+    await updateDoc(doc(db, "products", id), {
+      ...data,
+      updatedAt: new Date().toISOString()
+    });
     revalidatePath("/admin/products");
     revalidatePath("/divisions");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
+    console.error("Failed to update product:", error);
     return { error: "Failed to update product" };
   }
 }
 
 export async function deleteProduct(id: string) {
   try {
-    await prisma.product.delete({ where: { id } });
+    await deleteDoc(doc(db, "products", id));
     revalidatePath("/admin/products");
     revalidatePath("/divisions");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
+    console.error("Failed to delete product:", error);
     return { error: "Failed to delete product" };
   }
 }

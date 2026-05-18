@@ -1,4 +1,6 @@
-import prisma from "@/lib/prisma";
+import { getDivisions } from "@/app/admin/actions";
+import { query, collection, getDocs, orderBy } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import ProductCard from "@/components/admin/ProductCard";
@@ -7,14 +9,21 @@ import ProductCard from "@/components/admin/ProductCard";
 export const dynamic = "force-dynamic";
 
 export default async function AdminProductsPage() {
-  const divisions = await prisma.division.findMany({
-    include: {
-      products: {
-        orderBy: { updatedAt: 'desc' }
-      },
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+  const divisionsList = await getDivisions();
+  
+  let allProducts: any[] = [];
+  try {
+    const productsQuery = query(collection(db, "products"), orderBy("updatedAt", "desc"));
+    const productsSnapshot = await getDocs(productsQuery);
+    allProducts = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+  } catch (error) {
+    console.error("Failed to load products for dashboard:", error);
+  }
+
+  const divisions = divisionsList.map(division => ({
+    ...division,
+    products: allProducts.filter(p => p.divisionId === division.id)
+  }));
 
   return (
     <div>
@@ -60,7 +69,7 @@ export default async function AdminProductsPage() {
                   <p className="text-gray-400 text-sm italic">No products in this division yet.</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {division.products.map((product) => (
+                    {division.products.map((product: any) => (
                       <ProductCard key={product.id} product={product} />
                     ))}
                   </div>

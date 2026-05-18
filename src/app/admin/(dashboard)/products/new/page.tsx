@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import prisma from "@/lib/prisma";
+import { getDivisions } from "@/app/admin/actions";
 import ProductForm from "@/components/admin/ProductForm";
 
 export default async function AddProductPage() {
-  const divisions = await prisma.division.findMany({
-    select: { id: true, name: true },
-    orderBy: { name: 'asc' }
-  });
+  const divisions = await getDivisions();
 
   return (
     <div className="max-w-3xl mx-auto">

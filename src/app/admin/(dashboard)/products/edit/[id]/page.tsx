@@ -1,23 +1,30 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import prisma from "@/lib/prisma";
+import { getDivisions } from "@/app/admin/actions";
+import { getDoc, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import ProductEditForm from "@/components/admin/ProductEditForm";
 import { notFound } from "next/navigation";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const product = await prisma.product.findUnique({
-    where: { id }
-  });
+  
+  let product = null;
+  try {
+    const docRef = doc(db, "products", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      product = { id: docSnap.id, ...docSnap.data() } as any;
+    }
+  } catch (error) {
+    console.error("EditProductPage error loading product:", error);
+  }
 
   if (!product) {
     notFound();
   }
 
-  const divisions = await prisma.division.findMany({
-    select: { id: true, name: true },
-    orderBy: { name: 'asc' }
-  });
+  const divisions = await getDivisions();
 
   return (
     <div className="max-w-3xl mx-auto">

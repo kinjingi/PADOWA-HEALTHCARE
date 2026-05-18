@@ -1,27 +1,30 @@
 import { Package, MessageSquare, Activity, TrendingUp, Grid } from "lucide-react";
-import prisma from "@/lib/prisma";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import Link from "next/link";
 
 export default async function AdminDashboard() {
-  // In a real app, fetch these from DB. For now, we use Prisma counts.
   let productCount = 0;
   let inquiryCount = 0;
   let divisionCount = 0;
 
   try {
-    productCount = await prisma.product.count();
+    const productsSnapshot = await getDocs(collection(db, "products"));
+    productCount = productsSnapshot.size;
   } catch (err) {
     console.error("Dashboard productCount query failed:", err);
   }
 
   try {
-    inquiryCount = await prisma.inquiry.count();
+    const inquiriesSnapshot = await getDocs(collection(db, "inquiries"));
+    inquiryCount = inquiriesSnapshot.size;
   } catch (err) {
     console.error("Dashboard inquiryCount query failed:", err);
   }
 
   try {
-    divisionCount = await prisma.division.count();
+    const divisionsSnapshot = await getDocs(collection(db, "divisions"));
+    divisionCount = divisionsSnapshot.size;
   } catch (err) {
     console.error("Dashboard divisionCount query failed:", err);
   }

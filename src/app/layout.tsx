@@ -4,8 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CustomCursor from "@/components/CustomCursor";
-import prisma from "@/lib/prisma";
-import { getSettings } from "@/app/admin/actions";
+import { getSettings, getDivisions } from "@/app/admin/actions";
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +35,7 @@ export default async function RootLayout({
   let settings: Record<string, string> = {};
 
   try {
-    divisions = await prisma.division.findMany();
+    divisions = await getDivisions();
   } catch (err) {
     console.error("Layout divisions error:", err);
   }

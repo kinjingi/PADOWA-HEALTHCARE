@@ -1,14 +1,23 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import prisma from "@/lib/prisma";
+import { getDoc, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import DivisionEditForm from "@/components/admin/DivisionEditForm";
 import { notFound } from "next/navigation";
 
 export default async function EditDivisionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const division = await prisma.division.findUnique({
-    where: { id }
-  });
+  
+  let division = null;
+  try {
+    const docRef = doc(db, "divisions", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      division = { id: docSnap.id, ...docSnap.data() } as any;
+    }
+  } catch (error) {
+    console.error("EditDivisionPage error loading division:", error);
+  }
 
   if (!division) {
     notFound();

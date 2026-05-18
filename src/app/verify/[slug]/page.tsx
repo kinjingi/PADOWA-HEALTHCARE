@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma";
+import { query, collection, where, getDocs, limit, doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { notFound } from "next/navigation";
 import { ShieldCheck, Info, FlaskConical, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
@@ -6,12 +7,30 @@ import Link from "next/link";
 export default async function ProductVerifyPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   
-  let product = null;
+  let product: any = null;
   try {
-    product = await (prisma.product as any).findUnique({
-      where: { slug },
-      include: { division: true }
-    });
+    const q = query(collection(db, "products"), where("slug", "==", slug), limit(1));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      const pDoc = querySnapshot.docs[0];
+      const pData = pDoc.data();
+      
+      let divisionName = "Unknown";
+      if (pData.divisionId) {
+        const divDoc = await getDoc(doc(db, "divisions", pData.divisionId));
+        if (divDoc.exists()) {
+          divisionName = divDoc.data().name;
+        }
+      }
+
+      product = {
+        id: pDoc.id,
+        ...pData,
+        division: {
+          name: divisionName
+        }
+      };
+    }
   } catch (error) {
     console.error("ProductVerifyPage database error:", error);
   }
