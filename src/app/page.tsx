@@ -7,6 +7,7 @@ export default async function Home() {
     "hero_title_main",
     "hero_title_highlight",
     "hero_description",
+    "hero_budget",
     "about_us",
     "mission",
     "aim",

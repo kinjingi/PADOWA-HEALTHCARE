@@ -9,19 +9,25 @@ export default function HeroBannerPage() {
     hero_badge: "Doctor-Led Healthcare Organization",
     hero_title_main: "Innovating Healthcare With ",
     hero_title_highlight: "Care & Clinical Excellence",
-    hero_description: "Delivering trusted pharmaceutical solutions through scientific excellence, quality-focused innovation, and ethical healthcare practices."
+    hero_description: "Delivering trusted pharmaceutical solutions through scientific excellence, quality-focused innovation, and ethical healthcare practices.",
+    hero_budget: ""
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const keys = Object.keys(formData);
-      const data = await getSettings(keys);
-      if (Object.keys(data).length > 0) {
-        setFormData(prev => ({ ...prev, ...data }));
+      try {
+        const keys = Object.keys(formData);
+        const data = await getSettings(keys);
+        if (Object.keys(data).length > 0) {
+          setFormData(prev => ({ ...prev, ...data }));
+        }
+      } catch (error) {
+        console.error("HeroBannerPage load error:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     load();
   }, []);
@@ -34,7 +40,7 @@ export default function HeroBannerPage() {
     alert("Hero Banner updated successfully!");
   };
 
-  if (loading) return <div className="p-12 text-center">Loading...</div>;
+  if (loading) return <div className="p-12 text-center text-gray-500">Loading...</div>;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -87,6 +93,17 @@ export default function HeroBannerPage() {
               value={formData.hero_description}
               onChange={e => setFormData({...formData, hero_description: e.target.value})}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/50 resize-none" 
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-brand-navy mb-2">Hero Budget / Custom Tagline (Optional)</label>
+            <input 
+              type="text" 
+              value={formData.hero_budget}
+              onChange={e => setFormData({...formData, hero_budget: e.target.value})}
+              placeholder="e.g. Budget size, custom tagline or details"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/50" 
             />
           </div>
 

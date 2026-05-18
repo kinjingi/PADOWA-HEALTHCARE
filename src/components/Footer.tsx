@@ -63,13 +63,19 @@ export default function Footer({ divisions = [], settings = {} }: { divisions?: 
           <div>
             <h4 className="font-sora font-semibold text-brand-navy mb-6">Divisions</h4>
             <ul className="space-y-3">
-              {divisions.length > 0 ? divisions.map((div: any, i: number) => (
-                <li key={i}><Link href={`/divisions/${encodeURIComponent(div.name.toLowerCase())}`} className="text-brand-navy/70 hover:text-brand-cyan transition-colors text-sm">{div.name}</Link></li>
-              )) : (
-                <>
-                  <li><Link href="/divisions/gastro" className="text-brand-navy/70 hover:text-brand-cyan transition-colors text-sm">Gastro</Link></li>
-                  <li><Link href="/divisions/ortho" className="text-brand-navy/70 hover:text-brand-cyan transition-colors text-sm">Ortho</Link></li>
-                </>
+              {divisions.length > 0 ? (
+                divisions.map((div: any, i: number) => (
+                  <li key={i}>
+                    <Link 
+                      href={`/divisions/${encodeURIComponent(div.name.toLowerCase())}`} 
+                      className="text-brand-navy/70 hover:text-brand-cyan transition-colors text-sm"
+                    >
+                      {div.name}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <li className="text-brand-navy/40 text-xs italic">No divisions added yet</li>
               )}
             </ul>
           </div>

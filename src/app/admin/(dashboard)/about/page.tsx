@@ -33,11 +33,16 @@ export default function AboutContactPage() {
 
   useEffect(() => {
     async function load() {
-      const data = await getSettings(Object.keys(formData));
-      if (Object.keys(data).length > 0) {
-        setFormData(prev => ({ ...prev, ...data }));
+      try {
+        const data = await getSettings(Object.keys(formData));
+        if (Object.keys(data).length > 0) {
+          setFormData(prev => ({ ...prev, ...data }));
+        }
+      } catch (error) {
+        console.error("AboutContactPage load error:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     load();
   }, []);

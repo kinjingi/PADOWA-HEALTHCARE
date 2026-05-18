@@ -200,19 +200,20 @@ export async function deleteInformation(id: string) {
 export async function getSettings(keys: string[]) {
   try {
     const results: Record<string, string> = {};
+    const querySnapshot = await getDocs(collection(db, "settings"));
+    const allSettings = new Map(querySnapshot.docs.map(doc => [doc.id, doc.data().value]));
+    
     for (const key of keys) {
-      const docRef = doc(db, "settings", key);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        results[key] = docSnap.data().value;
-      } else {
-        results[key] = "";
-      }
+      results[key] = allSettings.get(key) || "";
     }
     return results;
   } catch (error) {
     console.error("Failed to get settings:", error);
-    return {};
+    const fallback: Record<string, string> = {};
+    for (const key of keys) {
+      fallback[key] = "";
+    }
+    return fallback;
   }
 }
 

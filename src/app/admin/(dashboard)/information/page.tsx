@@ -21,9 +21,14 @@ export default function InformationPages() {
   }, []);
 
   const fetchInfo = async () => {
-    const data = await getInformations();
-    setInformations(data);
-    setLoading(false);
+    try {
+      const data = await getInformations();
+      setInformations(data);
+    } catch (error) {
+      console.error("fetchInfo error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const openModal = (info?: Information) => {

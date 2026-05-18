@@ -74,10 +74,18 @@ export default function HomeClient({ heroSettings, informations, divisions }: Ho
               variants={staggerContainer}
               className="max-w-2xl"
             >
-              <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50/80 backdrop-blur-sm border border-blue-100 text-brand-blue font-medium text-sm mb-6 shadow-sm">
-                <ShieldCheck size={16} />
-                <span>{badge}</span>
-              </motion.div>
+              <div className="flex flex-wrap gap-3 mb-6">
+                <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50/80 backdrop-blur-sm border border-blue-100 text-brand-blue font-medium text-sm shadow-sm">
+                  <ShieldCheck size={16} />
+                  <span>{badge}</span>
+                </motion.div>
+                {heroSettings?.hero_budget && (
+                  <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50/80 backdrop-blur-sm border border-orange-100 text-brand-orange font-medium text-sm shadow-sm">
+                    <Award size={16} />
+                    <span>{heroSettings.hero_budget}</span>
+                  </motion.div>
+                )}
+              </div>
               
               <motion.h1 
                 variants={fadeInUp} 
