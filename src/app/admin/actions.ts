@@ -65,24 +65,36 @@ export async function deleteDivision(id: string) {
 }
 
 export async function verifyPassword(password: string) {
-  // Check environment variable first (best for Vercel)
-  const envPassword = process.env.ADMIN_PASSWORD;
-  if (envPassword && password === envPassword) {
-    return { success: true };
-  }
+  try {
+    // Check environment variable first (best for Vercel)
+    const envPassword = process.env.ADMIN_PASSWORD;
+    if (envPassword && password === envPassword) {
+      return { success: true };
+    }
 
-  // Fallback to database
-  let setting = await prisma.setting.findUnique({ where: { key: "admin_password" } });
-  
-  if (!setting) {
-    // Initial setup
-    setting = await prisma.setting.create({ data: { key: "admin_password", value: "padowa123" } });
-  }
+    // Fallback to database
+    let setting = await prisma.setting.findUnique({ where: { key: "admin_password" } });
+    
+    if (!setting) {
+      // Initial setup
+      setting = await prisma.setting.create({ data: { key: "admin_password", value: "padowa123" } });
+    }
 
-  if (password === setting.value) {
-    return { success: true };
+    if (password === setting.value) {
+      return { success: true };
+    }
+    return { success: false, error: "Incorrect password" };
+  } catch (error) {
+    console.error("verifyPassword error (falling back to env/default):", error);
+    
+    // In case of database error (like invalid provider in local schema vs env),
+    // fallback to ADMIN_PASSWORD env variable or default "padowa123"
+    const envPassword = process.env.ADMIN_PASSWORD || "padowa123";
+    if (password === envPassword) {
+      return { success: true };
+    }
+    return { success: false, error: "Incorrect password" };
   }
-  return { success: false, error: "Incorrect password" };
 }
 
 export async function updatePassword(newPassword: string) {
