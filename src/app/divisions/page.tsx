@@ -1,7 +1,7 @@
 import { getDivisions } from "@/app/admin/actions";
 import DivisionsClient from "@/components/DivisionsClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function Divisions() {
   let divisions: any[] = [];

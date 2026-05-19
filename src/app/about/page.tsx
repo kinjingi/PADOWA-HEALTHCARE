@@ -1,7 +1,7 @@
 import { getSettings } from "@/app/admin/actions";
 import AboutClient from "@/components/AboutClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function About() {
   const keys = [

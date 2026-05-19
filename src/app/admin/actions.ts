@@ -35,10 +35,7 @@ export async function createDivision(formData: FormData) {
       createdAt: new Date().toISOString(),
     });
 
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/divisions");
-    revalidatePath("/divisions");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("createDivision error:", error);
@@ -54,9 +51,7 @@ export async function updateDivision(id: string, name: string, description: stri
       icon,
       updatedAt: new Date().toISOString(),
     });
-    revalidatePath("/admin/divisions");
-    revalidatePath("/divisions");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("updateDivision error:", error);
@@ -74,9 +69,7 @@ export async function deleteDivision(id: string) {
     if (!snap.empty) return { error: "Cannot delete division that has products" };
 
     await adminDb.collection("divisions").doc(id).delete();
-    revalidatePath("/admin/divisions");
-    revalidatePath("/divisions");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("deleteDivision error:", error);
@@ -178,8 +171,7 @@ export async function createInformation(data: {
       ...data,
       createdAt: new Date().toISOString(),
     });
-    revalidatePath("/admin/information");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("createInformation error:", error);
@@ -196,8 +188,7 @@ export async function updateInformation(
       ...data,
       updatedAt: new Date().toISOString(),
     });
-    revalidatePath("/admin/information");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("updateInformation error:", error);
@@ -208,8 +199,7 @@ export async function updateInformation(
 export async function deleteInformation(id: string) {
   try {
     await adminDb.collection("informations").doc(id).delete();
-    revalidatePath("/admin/information");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("deleteInformation error:", error);
@@ -299,9 +289,7 @@ export async function createProduct(data: {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
-    revalidatePath("/admin/products");
-    revalidatePath("/divisions");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("createProduct error:", error);
@@ -324,9 +312,7 @@ export async function updateProduct(
       ...data,
       updatedAt: new Date().toISOString(),
     });
-    revalidatePath("/admin/products");
-    revalidatePath("/divisions");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("updateProduct error:", error);
@@ -337,9 +323,7 @@ export async function updateProduct(
 export async function deleteProduct(id: string) {
   try {
     await adminDb.collection("products").doc(id).delete();
-    revalidatePath("/admin/products");
-    revalidatePath("/divisions");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("deleteProduct error:", error);
