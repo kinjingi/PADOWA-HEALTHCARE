@@ -1,6 +1,8 @@
 import { getSettings, getInformations, getDivisions } from "@/app/admin/actions";
 import HomeClient from "@/components/HomeClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const keys = [
     "hero_badge",

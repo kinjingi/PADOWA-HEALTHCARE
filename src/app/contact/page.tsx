@@ -2,12 +2,31 @@
 
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createInquiry } from "@/app/admin/actions";
 
 export default function Contact() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [settings, setSettings] = useState({
+    contact_address: "123 Health Avenue, Medical District, City, Country 123456",
+    contact_phone: "+91 1234567890",
+    contact_email: "info@padowahealthcare.com",
+  });
+
+  useEffect(() => {
+    fetch("/api/settings?keys=contact_address,contact_phone,contact_email")
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          setSettings(prev => ({
+            ...prev,
+            ...Object.fromEntries(Object.entries(data).filter(([_, v]) => Boolean(v)))
+          }));
+        }
+      })
+      .catch(err => console.error("Error loading contact settings:", err));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,9 +75,8 @@ export default function Contact() {
               </div>
               <div>
                 <h3 className="font-sora font-bold text-xl mb-2">Corporate Office</h3>
-                <p className="text-brand-navy/60 leading-relaxed">
-                  123 Health Avenue, Medical District,<br />
-                  City, Country 123456
+                <p className="text-brand-navy/60 leading-relaxed whitespace-pre-line">
+                  {settings.contact_address}
                 </p>
               </div>
             </div>
@@ -69,8 +87,7 @@ export default function Contact() {
               </div>
               <div>
                 <h3 className="font-sora font-bold text-xl mb-2">Contact Numbers</h3>
-                <p className="text-brand-navy/60">+1 234 567 8900</p>
-                <p className="text-brand-navy/60">+1 987 654 3210</p>
+                <p className="text-brand-navy/60">{settings.contact_phone}</p>
               </div>
             </div>
 
@@ -80,8 +97,7 @@ export default function Contact() {
               </div>
               <div>
                 <h3 className="font-sora font-bold text-xl mb-2">Email Addresses</h3>
-                <p className="text-brand-navy/60">info@padowahealthcare.com</p>
-                <p className="text-brand-navy/60">support@padowahealthcare.com</p>
+                <p className="text-brand-navy/60">{settings.contact_email}</p>
               </div>
             </div>
           </motion.div>

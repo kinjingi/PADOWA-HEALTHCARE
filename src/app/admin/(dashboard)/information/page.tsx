@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Edit2, Trash2, X, Save } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Save, RefreshCw } from "lucide-react";
 import { getInformations, createInformation, updateInformation, deleteInformation } from "@/app/admin/actions";
 
 type Information = { id: string; title: string; category: string; desc: string; link?: string | null };
@@ -15,6 +15,33 @@ export default function InformationPages() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ title: "", category: "", desc: "", link: "" });
   const [saving, setSaving] = useState(false);
+
+  // Sync state
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState("");
+
+  const handleSyncArticles = async () => {
+    setSyncing(true);
+    setSyncMessage("");
+    try {
+      const res = await fetch("/api/admin/sync-articles", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        if (data.count > 0) {
+          setSyncMessage(`Synced successfully! Added ${data.count} new articles.`);
+        } else {
+          setSyncMessage("Feed is already up to date. No new articles found.");
+        }
+        fetchInfo();
+      } else {
+        setSyncMessage(`Error syncing: ${data.error || "Unknown error"}`);
+      }
+    } catch (e) {
+      setSyncMessage("Failed to connect to sync service.");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   useEffect(() => {
     fetchInfo();
@@ -78,6 +105,36 @@ export default function InformationPages() {
         >
           <Plus size={18} />
           Add New Update
+        </button>
+      </div>
+
+      {/* Automated Feed Importer Card */}
+      <div className="bg-gradient-to-r from-blue-500/10 via-cyan-500/5 to-transparent rounded-2xl border border-blue-100 p-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-lg font-bold text-brand-navy flex items-center gap-2">
+            <span className="flex h-3.5 w-3.5 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-cyan opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-brand-cyan"></span>
+            </span>
+            Automated Health Feed Sync (WHO, MCI, PCI)
+          </h2>
+          <p className="text-sm text-brand-navy/70 max-w-2xl font-light">
+            Automatically fetch and publish the latest health-related articles, guidelines, and notices from the World Health Organization (WHO), Medical Council of India (MCI), and Pharmacy Council of India (PCI).
+          </p>
+          {syncMessage && (
+            <p className={`text-sm font-medium mt-2 flex items-center gap-1.5 ${syncMessage.includes("Error") || syncMessage.includes("Failed") ? "text-red-600" : "text-emerald-600"}`}>
+              <span className={`w-2 h-2 rounded-full ${syncMessage.includes("Error") || syncMessage.includes("Failed") ? "bg-red-600" : "bg-emerald-500"}`}></span>
+              {syncMessage}
+            </p>
+          )}
+        </div>
+        <button
+          onClick={handleSyncArticles}
+          disabled={syncing}
+          className="px-6 py-3 bg-brand-navy text-white rounded-xl font-medium hover:bg-brand-orange transition-all duration-300 flex items-center gap-2 shadow-md shadow-navy-500/15 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
+        >
+          <RefreshCw size={18} className={syncing ? "animate-spin" : ""} />
+          {syncing ? "Syncing..." : "Sync Feeds Now"}
         </button>
       </div>
 

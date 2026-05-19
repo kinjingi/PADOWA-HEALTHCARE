@@ -1,5 +1,26 @@
 @import "tailwindcss";
 
+:root {
+  --transition-duration: 250ms;
+  --transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --bg-gradient-start: #f5f7fa;
+  --bg-gradient-end: #c3cfe2;
+  --bg-gradient-start-dark: #1a202c;
+  --bg-gradient-end-dark: #2d3748;
+}
+
+html {
+  background: linear-gradient(to bottom right, var(--bg-gradient-start), var(--bg-gradient-end));
+  transition: background var(--transition-duration) var(--transition-easing);
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    background: linear-gradient(to bottom right, var(--bg-gradient-start-dark), var(--bg-gradient-end-dark));
+  }
+}
+
+/* Preserve existing theme variables */
 @theme {
   --color-brand-blue: #2563EB;
   --color-brand-cyan: #06B6D4;
@@ -32,6 +53,10 @@
 @layer utilities {
   .glass {
     @apply bg-white/70 backdrop-blur-md border border-white/20;
+  }
+
+  .smooth {
+    transition: all var(--transition-duration) var(--transition-easing);
   }
 
   .glass-card {

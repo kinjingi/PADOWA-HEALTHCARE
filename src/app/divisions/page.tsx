@@ -1,6 +1,8 @@
 import { getDivisions } from "@/app/admin/actions";
 import DivisionsClient from "@/components/DivisionsClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function Divisions() {
   let divisions: any[] = [];
   try {

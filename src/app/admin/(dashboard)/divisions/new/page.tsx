@@ -66,6 +66,32 @@ export default function AddDivisionPage() {
             ></textarea>
           </div>
 
+          <div>
+            <label htmlFor="icon" className="block text-sm font-medium text-brand-navy mb-2">Icon Symbol *</label>
+            <select 
+              id="icon"
+              name="icon"
+              required
+              defaultValue="Lightbulb"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue transition-all bg-white"
+            >
+              <option value="Heart">Cardiology / Heart</option>
+              <option value="Activity">Gastroenterology / General Pulse</option>
+              <option value="ShieldCheck">Orthopedic / Immunity / Shield</option>
+              <option value="Baby">Pediatrics / Infant</option>
+              <option value="Zap">Neurology / Energy</option>
+              <option value="Brain">Brain / Neuro</option>
+              <option value="Eye">Ophthalmology / Vision</option>
+              <option value="Dna">Biotech / Genetics / DNA</option>
+              <option value="Pill">Pills / General Medicine</option>
+              <option value="Sparkles">Dermatology / Skin Care</option>
+              <option value="Flame">Inflammation / Urology</option>
+              <option value="Droplet">Liquid / Nephrology</option>
+              <option value="Stethoscope">Stethoscope / Clinical</option>
+              <option value="Lightbulb">Lightbulb / Innovation / Default</option>
+            </select>
+          </div>
+
           <div className="pt-4 flex justify-end gap-3 border-t border-gray-100">
             <Link href="/admin/divisions" className="px-6 py-3 rounded-xl border border-gray-200 text-brand-navy font-medium hover:bg-gray-50 transition-colors">
               Cancel

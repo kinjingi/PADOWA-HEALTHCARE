@@ -25,10 +25,13 @@ export default function AboutContactPage() {
     our_vision: "To build a future-ready healthcare organization recognized for innovation, trust, and excellence in pharmaceutical care.",
     cv1_title: "Scientific Excellence",
     cv1_desc: "Rigorous research and clinical focus in every formulation.",
+    cv1_icon: "Activity",
     cv2_title: "Ethical Practices",
     cv2_desc: "Transparency and integrity in all our healthcare operations.",
+    cv2_icon: "ShieldCheck",
     cv3_title: "Quality Driven",
-    cv3_desc: "Uncompromising standards maintaining WHO-GMP quality."
+    cv3_desc: "Uncompromising standards maintaining WHO-GMP quality.",
+    cv3_icon: "Award"
   });
 
   useEffect(() => {
@@ -184,6 +187,7 @@ export default function AboutContactPage() {
           
           <div className="grid md:grid-cols-3 gap-6">
             <div className="space-y-3">
+              <label className="text-xs font-semibold text-brand-navy/60 uppercase">Value 1</label>
               <input 
                 type="text" 
                 value={formData.cv1_title}
@@ -198,8 +202,27 @@ export default function AboutContactPage() {
                 placeholder="Value 1 Description"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/50 resize-none"
               ></textarea>
+              <select 
+                value={formData.cv1_icon}
+                onChange={e => setFormData({...formData, cv1_icon: e.target.value})}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/50 bg-white text-sm"
+              >
+                <option value="Activity">Activity / Heartbeat</option>
+                <option value="ShieldCheck">Shield / Ethics</option>
+                <option value="Award">Award / Quality</option>
+                <option value="Heart">Heart</option>
+                <option value="Zap">Zap</option>
+                <option value="Brain">Brain</option>
+                <option value="Eye">Eye</option>
+                <option value="Dna">DNA</option>
+                <option value="Pill">Pill</option>
+                <option value="Sparkles">Sparkles</option>
+                <option value="Stethoscope">Stethoscope</option>
+                <option value="Lightbulb">Lightbulb</option>
+              </select>
             </div>
             <div className="space-y-3">
+              <label className="text-xs font-semibold text-brand-navy/60 uppercase">Value 2</label>
               <input 
                 type="text" 
                 value={formData.cv2_title}
@@ -214,8 +237,27 @@ export default function AboutContactPage() {
                 placeholder="Value 2 Description"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/50 resize-none"
               ></textarea>
+              <select 
+                value={formData.cv2_icon}
+                onChange={e => setFormData({...formData, cv2_icon: e.target.value})}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/50 bg-white text-sm"
+              >
+                <option value="Activity">Activity / Heartbeat</option>
+                <option value="ShieldCheck">Shield / Ethics</option>
+                <option value="Award">Award / Quality</option>
+                <option value="Heart">Heart</option>
+                <option value="Zap">Zap</option>
+                <option value="Brain">Brain</option>
+                <option value="Eye">Eye</option>
+                <option value="Dna">DNA</option>
+                <option value="Pill">Pill</option>
+                <option value="Sparkles">Sparkles</option>
+                <option value="Stethoscope">Stethoscope</option>
+                <option value="Lightbulb">Lightbulb</option>
+              </select>
             </div>
             <div className="space-y-3">
+              <label className="text-xs font-semibold text-brand-navy/60 uppercase">Value 3</label>
               <input 
                 type="text" 
                 value={formData.cv3_title}
@@ -230,6 +272,24 @@ export default function AboutContactPage() {
                 placeholder="Value 3 Description"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/50 resize-none"
               ></textarea>
+              <select 
+                value={formData.cv3_icon}
+                onChange={e => setFormData({...formData, cv3_icon: e.target.value})}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-blue/50 bg-white text-sm"
+              >
+                <option value="Activity">Activity / Heartbeat</option>
+                <option value="ShieldCheck">Shield / Ethics</option>
+                <option value="Award">Award / Quality</option>
+                <option value="Heart">Heart</option>
+                <option value="Zap">Zap</option>
+                <option value="Brain">Brain</option>
+                <option value="Eye">Eye</option>
+                <option value="Dna">DNA</option>
+                <option value="Pill">Pill</option>
+                <option value="Sparkles">Sparkles</option>
+                <option value="Stethoscope">Stethoscope</option>
+                <option value="Lightbulb">Lightbulb</option>
+              </select>
             </div>
           </div>
         </div>

@@ -171,8 +171,9 @@ class CollectionQuery {
     return this;
   }
 
-  doc(id: string) {
-    return new DocRef(this.path, id);
+  doc(id?: string) {
+    const docId = id || Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return new DocRef(this.path, docId);
   }
 
   where(field: string, op: string, value: any) {

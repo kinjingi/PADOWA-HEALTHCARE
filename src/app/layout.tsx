@@ -4,6 +4,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CustomCursor from "@/components/CustomCursor";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import QueryProvider from "@/components/QueryProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -34,12 +36,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${sora.variable} antialiased`}>
+      <ThemeProvider><QueryProvider><body className={`${inter.variable} ${sora.variable} antialiased`}>
         <CustomCursor />
         <Navbar />
         {children}
         <Footer />
-      </body>
+      </body></QueryProvider></ThemeProvider>
     </html>
   );
 }

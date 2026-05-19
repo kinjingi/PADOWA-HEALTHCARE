@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 
-// Cache for 5 minutes
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -18,7 +17,7 @@ export async function GET() {
     });
 
     return NextResponse.json({ divisions, settings }, {
-      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60" },
+      headers: { "Cache-Control": "no-store, max-age=0, must-revalidate" },
     });
   } catch (err) {
     console.error("footer-data API error:", err);

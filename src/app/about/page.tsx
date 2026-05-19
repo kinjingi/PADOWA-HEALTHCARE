@@ -1,6 +1,8 @@
 import { getSettings } from "@/app/admin/actions";
 import AboutClient from "@/components/AboutClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function About() {
   const keys = [
     "about_us", "mission", "our_vision", "leadership",

@@ -90,7 +90,7 @@ export default function Footer() {
               {divisions.map((div, i) => (
                 <li key={i}>
                   <Link
-                    href={`/divisions/${encodeURIComponent(div.name.toLowerCase())}`}
+                    href="/divisions"
                     className="text-brand-navy/70 hover:text-brand-cyan transition-colors text-sm"
                   >
                     {div.name}

@@ -25,11 +25,13 @@ export async function createDivision(formData: FormData) {
   try {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
+    const icon = (formData.get("icon") as string) || "Lightbulb";
     if (!name) return { error: "Division name is required" };
 
     await adminDb.collection("divisions").add({
       name,
       description,
+      icon,
       createdAt: new Date().toISOString(),
     });
 
@@ -44,11 +46,12 @@ export async function createDivision(formData: FormData) {
   }
 }
 
-export async function updateDivision(id: string, name: string, description: string) {
+export async function updateDivision(id: string, name: string, description: string, icon: string) {
   try {
     await adminDb.collection("divisions").doc(id).update({
       name,
       description,
+      icon,
       updatedAt: new Date().toISOString(),
     });
     revalidatePath("/admin/divisions");
@@ -141,7 +144,7 @@ export async function updateSettings(settings: Record<string, string>) {
       batch.set(adminDb.collection("settings").doc(key), { value });
     }
     await batch.commit();
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     console.error("updateSettings error:", error);

@@ -2,7 +2,8 @@
 
 import { motion, Variants, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { ArrowRight, Activity, Heart, Stethoscope, Baby, ShieldCheck, Award, Target, Zap, Lightbulb } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import * as Icons from "lucide-react";
 import Link from "next/link";
 
 interface HomeClientProps {
@@ -11,21 +12,27 @@ interface HomeClientProps {
   divisions: any[];
 }
 
-const getIcon = (name: string, size = 24) => {
-  const n = name.toLowerCase();
-  if (n.includes('gastro')) return <Activity size={size} />;
-  if (n.includes('ortho')) return <ShieldCheck size={size} />;
-  if (n.includes('pedi')) return <Baby size={size} />;
-  if (n.includes('cardio')) return <Heart size={size} />;
-  if (n.includes('neuro')) return <Zap size={size} />;
-  if (n.includes('mission')) return <Award size={size} />;
-  if (n.includes('aim') || n.includes('vision')) return <Target size={size} />;
-  if (n.includes('leadership')) return <Stethoscope size={size} />;
-  if (n.includes('about')) return <Activity size={size} />;
-  if (n.includes('excel')) return <Activity size={size} />;
-  if (n.includes('ethic')) return <ShieldCheck size={size} />;
-  if (n.includes('qual')) return <Award size={size} />;
-  return <Lightbulb size={size} />;
+const getIconComponent = (iconName: string | undefined, nameText: string, size = 24) => {
+  if (iconName) {
+    const IconComponent = (Icons as any)[iconName];
+    if (IconComponent) return <IconComponent size={size} />;
+  }
+
+  // Fallback to name-based matching
+  const n = nameText.toLowerCase();
+  if (n.includes('gastro')) return <Icons.Activity size={size} />;
+  if (n.includes('ortho')) return <Icons.ShieldCheck size={size} />;
+  if (n.includes('pedi')) return <Icons.Baby size={size} />;
+  if (n.includes('cardio')) return <Icons.Heart size={size} />;
+  if (n.includes('neuro')) return <Icons.Zap size={size} />;
+  if (n.includes('mission')) return <Icons.Award size={size} />;
+  if (n.includes('aim') || n.includes('vision')) return <Icons.Target size={size} />;
+  if (n.includes('leadership')) return <Icons.Stethoscope size={size} />;
+  if (n.includes('about')) return <Icons.Activity size={size} />;
+  if (n.includes('excel') || n.includes('science')) return <Icons.Activity size={size} />;
+  if (n.includes('ethic')) return <Icons.ShieldCheck size={size} />;
+  if (n.includes('qual')) return <Icons.Award size={size} />;
+  return <Icons.Lightbulb size={size} />;
 };
 
 export default function HomeClient({ heroSettings, informations, divisions }: HomeClientProps) {
@@ -76,12 +83,12 @@ export default function HomeClient({ heroSettings, informations, divisions }: Ho
             >
               <div className="flex flex-wrap gap-3 mb-6">
                 <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50/80 backdrop-blur-sm border border-blue-100 text-brand-blue font-medium text-sm shadow-sm">
-                  <ShieldCheck size={16} />
+                  <Icons.ShieldCheck size={16} />
                   <span>{badge}</span>
                 </motion.div>
                 {heroSettings?.hero_budget && (
                   <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50/80 backdrop-blur-sm border border-orange-100 text-brand-orange font-medium text-sm shadow-sm">
-                    <Award size={16} />
+                    <Icons.Award size={16} />
                     <span>{heroSettings.hero_budget}</span>
                   </motion.div>
                 )}
@@ -123,7 +130,7 @@ export default function HomeClient({ heroSettings, informations, divisions }: Ho
                 >
                   <div className="absolute w-[80%] h-[80%] rounded-full border border-blue-200/40 animate-[spin_30s_linear_infinite]"></div>
                   <div className="absolute w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-cyan-100/50 to-blue-50/50 backdrop-blur-3xl border border-white/60 flex items-center justify-center shadow-2xl">
-                    <Activity size={80} className="text-brand-blue/30" />
+                    <Icons.Activity size={80} className="text-brand-blue/30" />
                   </div>
                 </motion.div>
               </div>
@@ -156,7 +163,7 @@ export default function HomeClient({ heroSettings, informations, divisions }: Ho
             {(informations || []).slice(0, 3).map((info, i) => (
               <motion.div variants={fadeInUp} key={i} className="glass-card rounded-[2rem] p-8 group hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border border-white/60 bg-white/60 backdrop-blur-lg">
                 <div className="w-12 h-12 rounded-full bg-cyan-50 flex items-center justify-center text-brand-cyan mb-6 group-hover:scale-110 transition-transform">
-                  {getIcon(info.category, 20)}
+                  {getIconComponent(undefined, info.category, 20)}
                 </div>
                 <p className="text-brand-cyan font-medium text-xs tracking-wider uppercase mb-3">{info.category}</p>
                 <h3 className="text-xl font-bold font-sora mb-3 group-hover:text-brand-blue transition-colors line-clamp-2">{info.title}</h3>
@@ -200,7 +207,7 @@ export default function HomeClient({ heroSettings, informations, divisions }: Ho
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent to-orange-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative z-10">
                   <div className="w-14 h-14 rounded-2xl bg-brand-clinical group-hover:bg-orange-50 flex items-center justify-center text-brand-blue mb-6 group-hover:scale-110 group-hover:text-brand-orange transition-all duration-300 shadow-sm border border-brand-cyan/10 group-hover:border-brand-orange/20">
-                    {getIcon(div.name, 28)}
+                    {getIconComponent(div.icon, div.name, 28)}
                   </div>
                   <h3 className="text-xl font-bold font-sora mb-3 group-hover:text-brand-blue transition-colors duration-300">{div.name}</h3>
                   <p className="text-brand-navy/60 text-sm mb-6 font-light line-clamp-3">{div.description || "Comprehensive healthcare solutions tailored for this therapeutic segment."}</p>
@@ -265,7 +272,7 @@ export default function HomeClient({ heroSettings, informations, divisions }: Ho
                 >
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-50 to-blue-50 group-hover:from-orange-50 group-hover:to-orange-100 flex items-center justify-center mb-6 transition-all duration-500 shadow-sm border border-cyan-100 group-hover:border-brand-orange/30">
                     <div className="text-brand-cyan group-hover:text-brand-orange transition-colors duration-300">
-                      {getIcon(item.title, 28)}
+                      {getIconComponent(undefined, item.title, 28)}
                     </div>
                   </div>
                   <h3 className="font-sora font-bold text-xl mb-3 group-hover:text-brand-blue transition-colors duration-300">{item.title}</h3>
@@ -299,9 +306,9 @@ export default function HomeClient({ heroSettings, informations, divisions }: Ho
             className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto"
           >
             {[
-              { title: heroSettings.cv1_title || "Scientific Excellence", desc: heroSettings.cv1_desc || "Rigorous research and clinical focus in every formulation." },
-              { title: heroSettings.cv2_title || "Ethical Practices", desc: heroSettings.cv2_desc || "Transparency and integrity in all our healthcare operations." },
-              { title: heroSettings.cv3_title || "Quality Driven", desc: heroSettings.cv3_desc || "Uncompromising standards maintaining WHO-GMP quality." }
+              { title: heroSettings.cv1_title || "Scientific Excellence", desc: heroSettings.cv1_desc || "Rigorous research and clinical focus in every formulation.", icon: heroSettings.cv1_icon },
+              { title: heroSettings.cv2_title || "Ethical Practices", desc: heroSettings.cv2_desc || "Transparency and integrity in all our healthcare operations.", icon: heroSettings.cv2_icon },
+              { title: heroSettings.cv3_title || "Quality Driven", desc: heroSettings.cv3_desc || "Uncompromising standards maintaining WHO-GMP quality.", icon: heroSettings.cv3_icon }
             ].map((val, i) => (
               <motion.div 
                 key={i}
@@ -310,7 +317,7 @@ export default function HomeClient({ heroSettings, informations, divisions }: Ho
                 className="text-center p-10 bg-white rounded-[2.5rem] shadow-sm border border-gray-100 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-500 group"
               >
                 <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-cyan-50 to-blue-50 group-hover:from-orange-50 group-hover:to-orange-100 flex items-center justify-center text-brand-cyan group-hover:text-brand-orange mb-8 transition-all duration-500 shadow-sm border border-cyan-100 group-hover:border-brand-orange/30">
-                  {getIcon(val.title, 32)}
+                  {getIconComponent(val.icon, val.title, 32)}
                 </div>
                 <h3 className="text-xl font-bold font-sora mb-4 text-brand-navy group-hover:text-brand-blue transition-colors duration-300">{val.title}</h3>
                 <p className="text-brand-navy/60 text-sm leading-relaxed font-light">{val.desc}</p>

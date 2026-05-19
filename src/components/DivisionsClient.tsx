@@ -1,17 +1,29 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Activity, ShieldCheck, Baby, Heart, ArrowRight, Lightbulb, Zap } from "lucide-react";
+import * as Icons from "lucide-react";
 import Link from "next/link";
 
-const getIcon = (name: string) => {
-  const n = name.toLowerCase();
-  if (n.includes('gastro')) return <Activity size={32} />;
-  if (n.includes('ortho')) return <ShieldCheck size={32} />;
-  if (n.includes('pedi')) return <Baby size={32} />;
-  if (n.includes('cardio')) return <Heart size={32} />;
-  if (n.includes('neuro')) return <Zap size={32} />;
-  return <Lightbulb size={32} />;
+interface Division {
+  id: string;
+  name: string;
+  description?: string;
+  icon?: string;
+}
+
+const getIconComponent = (iconName: string | undefined, nameText: string, size = 32) => {
+  if (iconName) {
+    const IconComponent = (Icons as any)[iconName];
+    if (IconComponent) return <IconComponent size={size} />;
+  }
+
+  const n = nameText.toLowerCase();
+  if (n.includes('gastro')) return <Icons.Activity size={size} />;
+  if (n.includes('ortho')) return <Icons.ShieldCheck size={size} />;
+  if (n.includes('pedi')) return <Icons.Baby size={size} />;
+  if (n.includes('cardio')) return <Icons.Heart size={size} />;
+  if (n.includes('neuro')) return <Icons.Zap size={size} />;
+  return <Icons.Lightbulb size={size} />;
 };
 
 export default function DivisionsClient({ divisions }: { divisions: any[] }) {
@@ -47,7 +59,7 @@ export default function DivisionsClient({ divisions }: { divisions: any[] }) {
             >
               <div className="flex items-start justify-between mb-6">
                 <div className="w-16 h-16 rounded-2xl bg-brand-clinical flex items-center justify-center text-brand-blue group-hover:scale-110 group-hover:text-brand-cyan transition-all">
-                  {getIcon(div.name)}
+                  {getIconComponent(div.icon, div.name)}
                 </div>
               </div>
               <h2 className="text-2xl font-bold font-sora mb-3">{div.name} Care</h2>
