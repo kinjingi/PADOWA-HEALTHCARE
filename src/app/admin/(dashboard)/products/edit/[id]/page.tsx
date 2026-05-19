@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getDivisions } from "@/app/admin/actions";
-import { getDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
 import ProductEditForm from "@/components/admin/ProductEditForm";
 import { notFound } from "next/navigation";
 
@@ -11,9 +10,8 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   
   let product = null;
   try {
-    const docRef = doc(db, "products", id);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
+    const docSnap = await adminDb.collection("products").doc(id).get();
+    if (docSnap.exists) {
       product = { id: docSnap.id, ...docSnap.data() } as any;
     }
   } catch (error) {

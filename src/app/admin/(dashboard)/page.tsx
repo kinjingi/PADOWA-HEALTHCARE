@@ -1,6 +1,5 @@
 import { Package, MessageSquare, Activity, TrendingUp, Grid } from "lucide-react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
 import Link from "next/link";
 
 export default async function AdminDashboard() {
@@ -9,22 +8,22 @@ export default async function AdminDashboard() {
   let divisionCount = 0;
 
   try {
-    const productsSnapshot = await getDocs(collection(db, "products"));
-    productCount = productsSnapshot.size;
+    const productsSnapshot = await adminDb.collection("products").count().get();
+    productCount = productsSnapshot.data().count;
   } catch (err) {
     console.error("Dashboard productCount query failed:", err);
   }
 
   try {
-    const inquiriesSnapshot = await getDocs(collection(db, "inquiries"));
-    inquiryCount = inquiriesSnapshot.size;
+    const inquiriesSnapshot = await adminDb.collection("inquiries").count().get();
+    inquiryCount = inquiriesSnapshot.data().count;
   } catch (err) {
     console.error("Dashboard inquiryCount query failed:", err);
   }
 
   try {
-    const divisionsSnapshot = await getDocs(collection(db, "divisions"));
-    divisionCount = divisionsSnapshot.size;
+    const divisionsSnapshot = await adminDb.collection("divisions").count().get();
+    divisionCount = divisionsSnapshot.data().count;
   } catch (err) {
     console.error("Dashboard divisionCount query failed:", err);
   }

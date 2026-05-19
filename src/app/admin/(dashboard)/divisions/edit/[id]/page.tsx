@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
 import DivisionEditForm from "@/components/admin/DivisionEditForm";
 import { notFound } from "next/navigation";
 
@@ -10,9 +9,8 @@ export default async function EditDivisionPage({ params }: { params: Promise<{ i
   
   let division = null;
   try {
-    const docRef = doc(db, "divisions", id);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
+    const docSnap = await adminDb.collection("divisions").doc(id).get();
+    if (docSnap.exists) {
       division = { id: docSnap.id, ...docSnap.data() } as any;
     }
   } catch (error) {

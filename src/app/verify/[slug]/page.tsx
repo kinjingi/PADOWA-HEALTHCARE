@@ -1,5 +1,4 @@
-import { query, collection, where, getDocs, limit, doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
 import { notFound } from "next/navigation";
 import { ShieldCheck, Info, FlaskConical, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
@@ -9,16 +8,19 @@ export default async function ProductVerifyPage({ params }: { params: Promise<{ 
   
   let product: any = null;
   try {
-    const q = query(collection(db, "products"), where("slug", "==", slug), limit(1));
-    const querySnapshot = await getDocs(q);
+    const querySnapshot = await adminDb
+      .collection("products")
+      .where("slug", "==", slug)
+      .limit(1)
+      .get();
     if (!querySnapshot.empty) {
       const pDoc = querySnapshot.docs[0];
       const pData = pDoc.data();
       
       let divisionName = "Unknown";
       if (pData.divisionId) {
-        const divDoc = await getDoc(doc(db, "divisions", pData.divisionId));
-        if (divDoc.exists()) {
+        const divDoc = await adminDb.collection("divisions").doc(pData.divisionId).get();
+        if (divDoc.exists) {
           divisionName = divDoc.data().name;
         }
       }
