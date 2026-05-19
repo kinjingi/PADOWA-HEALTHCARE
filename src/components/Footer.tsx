@@ -3,10 +3,34 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Mail, Phone, MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
 
-export default function Footer({ divisions = [], settings = {} }: { divisions?: any[], settings?: Record<string, string> }) {
+// Fallback static divisions — shown immediately, replaced when API loads
+const STATIC_DIVISIONS = [
+  { name: "Gastroenterology" },
+  { name: "Orthopaedics" },
+  { name: "Paediatrics" },
+];
+
+export default function Footer() {
   const pathname = usePathname();
-  if (pathname.startsWith('/admin')) return null;
+  const [divisions, setDivisions] = useState<{ name: string }[]>(STATIC_DIVISIONS);
+  const [settings, setSettings] = useState<Record<string, string>>({});
+
+  // Load footer data lazily (after page paint) — does NOT block navigation
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/footer-data", { signal: controller.signal })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.divisions?.length) setDivisions(data.divisions);
+        if (data?.settings) setSettings(data.settings);
+      })
+      .catch(() => {}); // silently fail
+    return () => controller.abort();
+  }, []);
+
+  if (pathname.startsWith("/admin")) return null;
 
   return (
     <footer className="bg-brand-clinical border-t border-brand-cyan/10 pt-20 pb-10">
@@ -14,12 +38,15 @@ export default function Footer({ divisions = [], settings = {} }: { divisions?: 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
           {/* Brand Info */}
           <div>
-            <h3 className="font-sora font-bold text-2xl text-brand-blue mb-4">PADOWA <span className="text-brand-navy">HEALTHCARE</span></h3>
+            <h3 className="font-sora font-bold text-2xl text-brand-blue mb-4">
+              PADOWA <span className="text-brand-navy">HEALTHCARE</span>
+            </h3>
             <p className="text-brand-orange font-medium text-sm mb-4 tracking-wide">
               {settings?.footer_tagline || "Love in Every Dose"}
             </p>
             <p className="text-brand-navy/70 text-sm leading-relaxed mb-6">
-              {settings?.footer_description || "A premium doctor-led pharmaceutical organization committed to delivering quality-driven and innovative healthcare solutions."}
+              {settings?.footer_description ||
+                "A premium doctor-led pharmaceutical organization committed to delivering quality-driven and innovative healthcare solutions."}
             </p>
             <div className="flex gap-4">
               {settings?.social_fb && (
@@ -42,9 +69,6 @@ export default function Footer({ divisions = [], settings = {} }: { divisions?: 
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
                 </a>
               )}
-              {!settings?.social_fb && !settings?.social_tw && !settings?.social_ig && !settings?.social_li && (
-                <div className="text-brand-navy/40 text-xs italic">No social links added</div>
-              )}
             </div>
           </div>
 
@@ -63,20 +87,16 @@ export default function Footer({ divisions = [], settings = {} }: { divisions?: 
           <div>
             <h4 className="font-sora font-semibold text-brand-navy mb-6">Divisions</h4>
             <ul className="space-y-3">
-              {divisions.length > 0 ? (
-                divisions.map((div: any, i: number) => (
-                  <li key={i}>
-                    <Link 
-                      href={`/divisions/${encodeURIComponent(div.name.toLowerCase())}`} 
-                      className="text-brand-navy/70 hover:text-brand-cyan transition-colors text-sm"
-                    >
-                      {div.name}
-                    </Link>
-                  </li>
-                ))
-              ) : (
-                <li className="text-brand-navy/40 text-xs italic">No divisions added yet</li>
-              )}
+              {divisions.map((div, i) => (
+                <li key={i}>
+                  <Link
+                    href={`/divisions/${encodeURIComponent(div.name.toLowerCase())}`}
+                    className="text-brand-navy/70 hover:text-brand-cyan transition-colors text-sm"
+                  >
+                    {div.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

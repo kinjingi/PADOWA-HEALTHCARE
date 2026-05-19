@@ -1,6 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { initializeFirestore } from "firebase/firestore";
-import { getAnalytics, isSupported } from "firebase/analytics";
+import { initializeFirestore, getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -9,21 +8,23 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
-// Use getApps() to prevent initializing multiple times in development (HMR)
+// Initialize Firebase app (singleton)
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-// Initialize Firestore with experimentalForceLongPolling enabled.
-// This is critical for Serverless/Next.js routes to load instantly without TCP/WebSocket connection delays!
-const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-  ignoreUndefinedProperties: true
-});
+// Initialize Firestore once
+// Use experimentalForceLongPolling ONLY in server/Node environment (not in browser)
+let db: ReturnType<typeof getFirestore>;
+try {
+  db = initializeFirestore(app, {
+    experimentalForceLongPolling: typeof window === "undefined",
+    ignoreUndefinedProperties: true,
+  });
+} catch (e) {
+  console.warn("initializeFirestore failed, using getFirestore fallback:", e);
+  db = getFirestore(app);
+}
 
-// Analytics is only supported in browser environments
-const analytics = typeof window !== 'undefined' ? isSupported().then(yes => yes ? getAnalytics(app) : null) : null;
-
-export { app, db, analytics };
+export { app, db };

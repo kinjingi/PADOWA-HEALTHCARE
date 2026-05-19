@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CustomCursor from "@/components/CustomCursor";
-import { getSettings, getDivisions } from "@/app/admin/actions";
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -15,47 +15,30 @@ const sora = Sora({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "PADOWA Health Care - Love in Every Dose",
-  description: "A premium doctor-led pharmaceutical organization committed to delivering quality-driven and innovative healthcare solutions.",
+  description:
+    "A premium doctor-led pharmaceutical organization committed to delivering quality-driven and innovative healthcare solutions.",
   icons: {
     icon: "/favicon.png",
   },
 };
 
-export default async function RootLayout({
+// NOTE: We've removed Firebase calls from the root layout.
+// Navbar, Footer data is fetched from their own async sub-components
+// or from dedicated layout files to avoid blocking every page.
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let divisions: any[] = [];
-  let settings: Record<string, string> = {};
-
-  try {
-    divisions = await getDivisions();
-  } catch (err) {
-    console.error("Layout divisions error:", err);
-  }
-
-  try {
-    settings = await getSettings([
-      "contact_email", "contact_phone", "contact_address",
-      "footer_tagline", "footer_description",
-      "social_fb", "social_ig", "social_li", "social_tw"
-    ]);
-  } catch (err) {
-    console.error("Layout settings error:", err);
-  }
-
   return (
     <html lang="en">
-      <body
-        className={`${inter.variable} ${sora.variable} antialiased`}
-      >
+      <body className={`${inter.variable} ${sora.variable} antialiased`}>
         <CustomCursor />
         <Navbar />
         {children}
-        <Footer divisions={divisions} settings={settings} />
+        <Footer />
       </body>
     </html>
   );

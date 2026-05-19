@@ -1,6 +1,7 @@
 "use client";
 
 import { Edit2, Trash2 } from "lucide-react";
+import { memo } from "react";
 import { deleteProduct } from "@/app/admin/actions";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,13 +10,13 @@ import Link from "next/link";
 interface ProductCardProps {
   product: {
     id: string;
-    name: string;
-    composition: string;
-    description: string | null;
+    name?: string;
+    composition?: string;
+    description?: string | null;
   };
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default memo(function ProductCard({ product }: ProductCardProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -56,4 +57,4 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
     </div>
   );
-}
+});

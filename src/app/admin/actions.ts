@@ -1,32 +1,22 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { 
-  collection, 
-  doc, 
-  addDoc, 
-  getDoc, 
-  getDocs, 
-  setDoc,
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  where, 
-  orderBy,
-  limit
-} from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function docToObj(doc: any): any {
+  return { id: doc.id, ...doc.data() };
+}
+
+// ─── Divisions ────────────────────────────────────────────────────────────────
 
 export async function getDivisions() {
   try {
-    const q = query(collection(db, "divisions"), orderBy("name"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as any[];
+    const snap = await adminDb.collection("divisions").orderBy("name").get();
+    return snap.docs.map(docToObj);
   } catch (error) {
-    console.error("Failed to get divisions:", error);
+    console.error("getDivisions error:", error);
     return [];
   }
 }
@@ -35,326 +25,332 @@ export async function createDivision(formData: FormData) {
   try {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
+    if (!name) return { error: "Division name is required" };
 
-    if (!name) {
-      return { error: "Division name is required" };
-    }
-
-    await addDoc(collection(db, "divisions"), {
+    await adminDb.collection("divisions").add({
       name,
       description,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
 
     revalidatePath("/admin/products");
     revalidatePath("/admin/divisions");
-    revalidatePath("/divisions"); 
+    revalidatePath("/divisions");
     revalidatePath("/");
-    
     return { success: true };
   } catch (error) {
-    console.error("Failed to create division:", error);
+    console.error("createDivision error:", error);
     return { error: "Failed to create division" };
   }
 }
 
 export async function updateDivision(id: string, name: string, description: string) {
   try {
-    await updateDoc(doc(db, "divisions", id), {
+    await adminDb.collection("divisions").doc(id).update({
       name,
       description,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
     revalidatePath("/admin/divisions");
     revalidatePath("/divisions");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
-    console.error("Failed to update division:", error);
+    console.error("updateDivision error:", error);
     return { error: "Failed to update division" };
   }
 }
 
 export async function deleteDivision(id: string) {
   try {
-    // First check if there are products with this divisionId
-    const q = query(collection(db, "products"), where("divisionId", "==", id));
-    const querySnapshot = await getDocs(q);
-    if (!querySnapshot.empty) {
-      return { error: "Cannot delete division that has products" };
-    }
-    
-    await deleteDoc(doc(db, "divisions", id));
+    const snap = await adminDb
+      .collection("products")
+      .where("divisionId", "==", id)
+      .limit(1)
+      .get();
+    if (!snap.empty) return { error: "Cannot delete division that has products" };
+
+    await adminDb.collection("divisions").doc(id).delete();
     revalidatePath("/admin/divisions");
     revalidatePath("/divisions");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
-    console.error("Failed to delete division:", error);
+    console.error("deleteDivision error:", error);
     return { error: "Failed to delete division" };
   }
 }
 
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
 export async function verifyPassword(password: string) {
   try {
+    // Check env var first (fastest — no DB hit)
     const envPassword = process.env.ADMIN_PASSWORD;
-    if (envPassword && password === envPassword) {
-      return { success: true };
-    }
+    if (envPassword && password === envPassword) return { success: true };
 
-    // Fetch setting from settings collection
-    const docRef = doc(db, "settings", "admin_password");
-    const docSnap = await getDoc(docRef);
-    
+    const docSnap = await adminDb.collection("settings").doc("admin_password").get();
     let value = "padowa123";
-    if (docSnap.exists()) {
-      value = docSnap.data().value;
+    if (docSnap.exists) {
+      value = docSnap.data()?.value ?? value;
     } else {
-      // Create default in Firestore
-      await setDoc(docRef, { value });
+      await adminDb.collection("settings").doc("admin_password").set({ value });
     }
 
-    if (password === value) {
-      return { success: true };
-    }
-    return { success: false, error: "Incorrect password" };
+    return password === value
+      ? { success: true }
+      : { success: false, error: "Incorrect password" };
   } catch (error) {
-    console.error("verifyPassword error (falling back to env/default):", error);
+    console.error("verifyPassword error:", error);
     const envPassword = process.env.ADMIN_PASSWORD || "padowa123";
-    if (password === envPassword) {
-      return { success: true };
-    }
-    return { success: false, error: "Incorrect password" };
+    return password === envPassword
+      ? { success: true }
+      : { success: false, error: "Incorrect password" };
   }
 }
 
 export async function updatePassword(newPassword: string) {
   try {
-    await setDoc(doc(db, "settings", "admin_password"), {
-      value: newPassword
-    });
+    await adminDb.collection("settings").doc("admin_password").set({ value: newPassword });
     return { success: true };
   } catch (error) {
-    console.error("Failed to update password:", error);
+    console.error("updatePassword error:", error);
     return { error: "Failed to update password" };
   }
 }
 
-// Information Actions
+// ─── Settings ─────────────────────────────────────────────────────────────────
+
+export async function getSettings(keys: string[]) {
+  try {
+    const snap = await adminDb.collection("settings").get();
+    const allSettings = new Map(snap.docs.map(d => [d.id, d.data().value ?? ""]));
+    const results: Record<string, string> = {};
+    for (const key of keys) results[key] = allSettings.get(key) ?? "";
+    return results;
+  } catch (error) {
+    console.error("getSettings error:", error);
+    return Object.fromEntries(keys.map(k => [k, ""]));
+  }
+}
+
+export async function updateSettings(settings: Record<string, string>) {
+  try {
+    const batch = adminDb.batch();
+    for (const [key, value] of Object.entries(settings)) {
+      batch.set(adminDb.collection("settings").doc(key), { value });
+    }
+    await batch.commit();
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("updateSettings error:", error);
+    return { error: "Failed to update settings" };
+  }
+}
+
+// ─── Informations ─────────────────────────────────────────────────────────────
+
 export async function getInformations() {
   try {
-    const q = query(collection(db, "informations"), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as any[];
+    const snap = await adminDb
+      .collection("informations")
+      .orderBy("createdAt", "desc")
+      .get();
+    return snap.docs.map(docToObj);
   } catch (error) {
-    console.error("Failed to get informations:", error);
+    console.error("getInformations error:", error);
     return [];
   }
 }
 
-export async function createInformation(data: { title: string; category: string; desc: string; link?: string }) {
+export async function createInformation(data: {
+  title: string;
+  category: string;
+  desc: string;
+  link?: string;
+}) {
   try {
-    await addDoc(collection(db, "informations"), {
+    await adminDb.collection("informations").add({
       ...data,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
     revalidatePath("/admin/information");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
-    console.error("Failed to create information:", error);
+    console.error("createInformation error:", error);
     return { error: "Failed to create information" };
   }
 }
 
-export async function updateInformation(id: string, data: { title: string; category: string; desc: string; link?: string }) {
+export async function updateInformation(
+  id: string,
+  data: { title: string; category: string; desc: string; link?: string }
+) {
   try {
-    await updateDoc(doc(db, "informations", id), {
+    await adminDb.collection("informations").doc(id).update({
       ...data,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
     revalidatePath("/admin/information");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
-    console.error("Failed to update information:", error);
+    console.error("updateInformation error:", error);
     return { error: "Failed to update information" };
   }
 }
 
 export async function deleteInformation(id: string) {
   try {
-    await deleteDoc(doc(db, "informations", id));
+    await adminDb.collection("informations").doc(id).delete();
     revalidatePath("/admin/information");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
-    console.error("Failed to delete information:", error);
+    console.error("deleteInformation error:", error);
     return { error: "Failed to delete information" };
   }
 }
 
-export async function getSettings(keys: string[]) {
-  try {
-    const results: Record<string, string> = {};
-    const querySnapshot = await getDocs(collection(db, "settings"));
-    const allSettings = new Map(querySnapshot.docs.map(doc => [doc.id, doc.data().value]));
-    
-    for (const key of keys) {
-      results[key] = allSettings.get(key) || "";
-    }
-    return results;
-  } catch (error) {
-    console.error("Failed to get settings:", error);
-    const fallback: Record<string, string> = {};
-    for (const key of keys) {
-      fallback[key] = "";
-    }
-    return fallback;
-  }
-}
-
-export async function updateSettings(settings: Record<string, string>) {
-  try {
-    for (const [key, value] of Object.entries(settings)) {
-      await setDoc(doc(db, "settings", key), { value });
-    }
-    revalidatePath("/");
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to update settings:", error);
-    return { error: "Failed to update settings" };
-  }
-}
+// ─── Inquiries ────────────────────────────────────────────────────────────────
 
 export async function createInquiry(formData: FormData) {
   try {
-    await addDoc(collection(db, "inquiries"), {
+    await adminDb.collection("inquiries").add({
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       phone: (formData.get("phone") as string) || "N/A",
-      company: formData.get("company") as string || null,
+      company: (formData.get("company") as string) || null,
       message: formData.get("message") as string,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
     revalidatePath("/admin/inquiries");
     return { success: true };
   } catch (error) {
-    console.error("Failed to create inquiry:", error);
+    console.error("createInquiry error:", error);
     return { error: "Failed to create inquiry" };
   }
 }
 
 export async function deleteInquiry(id: string) {
   try {
-    await deleteDoc(doc(db, "inquiries", id));
+    await adminDb.collection("inquiries").doc(id).delete();
     revalidatePath("/admin/inquiries");
     return { success: true };
   } catch (error) {
-    console.error("Failed to delete inquiry:", error);
+    console.error("deleteInquiry error:", error);
     return { error: "Failed to delete inquiry" };
   }
 }
 
 export async function getInquiries() {
   try {
-    const q = query(collection(db, "inquiries"), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as any[];
+    const snap = await adminDb
+      .collection("inquiries")
+      .orderBy("createdAt", "desc")
+      .get();
+    return snap.docs.map(docToObj);
   } catch (error) {
-    console.error("Failed to get inquiries:", error);
+    console.error("getInquiries error:", error);
     return [];
   }
 }
 
-// Product Actions
+// ─── Products ─────────────────────────────────────────────────────────────────
+
 export async function getProducts() {
   try {
-    const q = query(collection(db, "products"), orderBy("updatedAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    
-    // Join division manually because Firestore is NoSQL
-    const products = querySnapshot.docs.map(doc => ({
+    const [productsSnap, divisions] = await Promise.all([
+      adminDb.collection("products").orderBy("updatedAt", "desc").get(),
+      getDivisions(),
+    ]);
+    const divisionsMap = new Map(divisions.map((d: any) => [d.id, d]));
+    return productsSnap.docs.map(doc => ({
       id: doc.id,
-      ...doc.data()
-    })) as any[];
-
-    // Fetch divisions list to map names
-    const divisions = await getDivisions();
-    const divisionsMap = new Map(divisions.map(d => [d.id, d]));
-
-    return products.map(product => ({
-      ...product,
-      division: divisionsMap.get(product.divisionId) || { name: "Unknown" }
+      ...doc.data(),
+      division: divisionsMap.get((doc.data() as any).divisionId) || { name: "Unknown" },
     }));
   } catch (error) {
-    console.error("Failed to get products:", error);
+    console.error("getProducts error:", error);
     return [];
   }
 }
 
-export async function createProduct(data: { 
-  name: string; 
-  composition: string; 
-  description: string; 
+export async function createProduct(data: {
+  name: string;
+  composition: string;
+  description: string;
   divisionId: string;
   imageUrl?: string;
 }) {
   try {
-    const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substring(2, 7);
-    await addDoc(collection(db, "products"), {
+    const slug =
+      data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") +
+      "-" +
+      Math.random().toString(36).substring(2, 7);
+    await adminDb.collection("products").add({
       ...data,
       slug,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
     revalidatePath("/admin/products");
     revalidatePath("/divisions");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
-    console.error("Failed to create product:", error);
+    console.error("createProduct error:", error);
     return { error: "Failed to create product" };
   }
 }
 
-export async function updateProduct(id: string, data: { 
-  name: string; 
-  composition: string; 
-  description: string; 
-  divisionId: string;
-  imageUrl?: string;
-}) {
+export async function updateProduct(
+  id: string,
+  data: {
+    name: string;
+    composition: string;
+    description: string;
+    divisionId: string;
+    imageUrl?: string;
+  }
+) {
   try {
-    await updateDoc(doc(db, "products", id), {
+    await adminDb.collection("products").doc(id).update({
       ...data,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
     revalidatePath("/admin/products");
     revalidatePath("/divisions");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
-    console.error("Failed to update product:", error);
+    console.error("updateProduct error:", error);
     return { error: "Failed to update product" };
   }
 }
 
 export async function deleteProduct(id: string) {
   try {
-    await deleteDoc(doc(db, "products", id));
+    await adminDb.collection("products").doc(id).delete();
     revalidatePath("/admin/products");
     revalidatePath("/divisions");
     revalidatePath("/");
     return { success: true };
   } catch (error) {
-    console.error("Failed to delete product:", error);
+    console.error("deleteProduct error:", error);
     return { error: "Failed to delete product" };
   }
+}
+
+// Hero/content actions
+export async function getHeroData() {
+  return getSettings([
+    "hero_badge",
+    "hero_title_main",
+    "hero_title_highlight",
+    "hero_description",
+    "hero_budget",
+  ]);
 }

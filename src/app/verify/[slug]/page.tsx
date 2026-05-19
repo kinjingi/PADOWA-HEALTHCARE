@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import { ShieldCheck, Info, FlaskConical, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
 
-export default async function ProductVerifyPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function ProductVerifyPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   
   let product: any = null;
   try {

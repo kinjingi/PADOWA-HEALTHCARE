@@ -20,14 +20,20 @@ export default function CustomCursor() {
   useEffect(() => {
     // Check if device is touch-based or has a coarse pointer (mobile)
     const checkMobile = () => {
-      setIsMobile(window.matchMedia("(pointer: coarse)").matches);
+      const isCoarse = window.matchMedia("(pointer: coarse)").matches;
+      const lowCPU = (navigator.hardwareConcurrency || 4) < 4;
+      setIsMobile(isCoarse || lowCPU);
     };
     
     checkMobile();
     window.addEventListener("resize", checkMobile);
+    let animationFrame: number;
     const updateMousePosition = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(() => {
+        mouseX.set(e.clientX);
+        mouseY.set(e.clientY);
+      });
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -52,6 +58,7 @@ export default function CustomCursor() {
       window.removeEventListener("resize", checkMobile);
       window.removeEventListener("mousemove", updateMousePosition);
       window.removeEventListener("mouseover", handleMouseOver);
+      if (animationFrame) cancelAnimationFrame(animationFrame);
     };
   }, []);
 
