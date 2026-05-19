@@ -43,15 +43,27 @@ export default function Navbar() {
         <div className={`glass rounded-full px-8 py-3 hidden md:flex items-center justify-center gap-8 mx-auto ${
           isScrolled ? "shadow-md" : ""
         }`}>
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              className="text-sm font-medium text-brand-navy/80 hover:text-brand-orange transition-colors"
-            >
-              {link.name}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={`relative text-sm font-medium transition-colors duration-300 py-1 ${
+                  isActive ? "text-brand-blue font-semibold" : "text-brand-navy/80 hover:text-brand-orange"
+                }`}
+              >
+                {link.name}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNavIndicator"
+                    className="absolute -bottom-1.5 left-2 right-2 h-0.5 bg-gradient-to-r from-brand-blue to-brand-cyan rounded-full"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Mobile Menu Toggle */}

@@ -12,6 +12,22 @@
 html {
   background: linear-gradient(to bottom right, var(--bg-gradient-start), var(--bg-gradient-end));
   transition: background var(--transition-duration) var(--transition-easing);
+  scroll-behavior: smooth;
+}
+
+/* Custom premium scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #06B6D4, #2563EB);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2563EB;
 }
 
 @media (prefers-color-scheme: dark) {
